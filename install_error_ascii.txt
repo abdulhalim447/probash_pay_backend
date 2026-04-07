@@ -1,0 +1,12 @@
+Progress: resolved 0, reused 1, downloaded 0, added 0
+Progress: resolved 296, reused 293, downloaded 0, added 0
+???WARN??? 3 deprecated subdependencies found: glob@10.5.0, glob@7.2.3, inflight@1.0.6
+Already up to date
+Progress: resolved 755, reused 736, downloaded 0, added 0, done
+???WARN??? Issues with peer dependencies found
+.
+????????? @nestjs/swagger 11.2.6
+  ????????? @nestjs/mapped-types 2.1.0
+    ????????? ??? unmet peer class-validator@"^0.13.0 || ^0.14.0": found 0.15.1
+
+Done in 3.2s using pnpm v10.28.2

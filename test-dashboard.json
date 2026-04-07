@@ -1,0 +1,6 @@
+[
+  "=== Step 1: Admin login ===",
+  "Admin Token received",
+  "\n=== Step 2: Dashboard stats দেখো ===",
+  "{\n  \"users\": {\n    \"total\": 6,\n    \"active\": 6,\n    \"blocked\": 0,\n    \"newToday\": 5\n  },\n  \"deposits\": {\n    \"total\": 1,\n    \"totalAmountMYR\": 500,\n    \"pending\": 0,\n    \"todayCount\": 0,\n    \"todayAmountMYR\": 0\n  },\n  \"withdrawals\": {\n    \"total\": 0,\n    \"totalAmountBDT\": 0,\n    \"pending\": 0,\n    \"processing\": 0,\n    \"todayCount\": 0,\n    \"todayAmountBDT\": 0\n  },\n  \"wallet\": {\n    \"totalBalanceMYR\": 500\n  },\n  \"exchangeRate\": {\n    \"currentRate\": 26.5,\n    \"from\": \"MYR\",\n    \"to\": \"BDT\"\n  }\n}"
+]

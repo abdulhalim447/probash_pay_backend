@@ -1,0 +1,35 @@
+[
+  "=== Step 1: Admin login ===",
+  "Admin Token received",
+  "\n=== Step 2: Notice তৈরি করো ===",
+  {
+    "id": "6b1b5b52-2c40-474c-a459-648ebcfab85d",
+    "title": "সিস্টেম আপডেট নোটিশ",
+    "content": "আগামী ২৪ ঘণ্টা সিস্টেম মেইনটেন্যান্সে থাকবে।",
+    "isActive": true,
+    "createdAt": "2026-04-07T06:48:29.882Z",
+    "updatedAt": "2026-04-07T06:48:29.882Z"
+  },
+  "\n=== Step 3: আরেকটি notice তৈরি করো ===",
+  {
+    "id": "997c7fa1-52c0-41c0-91eb-8dc89ec7e27d",
+    "title": "নতুন ফিচার লঞ্চ",
+    "content": "এখন থেকে bKash এ সরাসরি withdrawal করা যাবে।",
+    "isActive": true,
+    "createdAt": "2026-04-07T06:48:29.908Z",
+    "updatedAt": "2026-04-07T06:48:29.908Z"
+  },
+  "\n=== Step 4: Admin সব notices দেখো ===",
+  "Count: 2",
+  "\n=== Step 5: Public API test ===",
+  "Count: 2",
+  "\n=== Step 6: Toggle inactive ===",
+  "Public Count after toggle: 1 (first one hidden)",
+  "\n=== Step 7: Update notice ===",
+  "Updated title: আপডেট: নতুন ফিচার",
+  "\n=== Step 8: Delete notice ===",
+  {
+    "message": "Notice deleted successfully"
+  },
+  "Admin Count after delete: 1"
+]

@@ -1,0 +1,41 @@
+[
+  "=== Step 1: User login ===",
+  "User Token saved",
+  "\n=== Step 2: Profile দেখো ===",
+  {
+    "id": "5b1daa76-9e0a-496d-bbc2-cdebb2d7d8f0",
+    "fullName": "Test Profile",
+    "phone": "01900001001",
+    "email": null,
+    "isActive": true,
+    "createdAt": "2026-04-07T07:43:41.315Z",
+    "wallet": {
+      "balanceMYR": 0,
+      "balanceBDT": 0,
+      "currency": "MYR"
+    }
+  },
+  "\n=== Step 3: Profile update করো ===",
+  "Updated User: Mohammad Rahim, rahim1775547821644@example.com",
+  "\n=== Step 4: Profile verify করো ===",
+  "Verified User: Mohammad Rahim, rahim1775547821644@example.com",
+  "\n=== Step 5: PIN change করো ===",
+  {
+    "message": "PIN changed successfully"
+  },
+  "\n=== Step 6: নতুন PIN দিয়ে login verify ===",
+  "Login successful with new PIN",
+  "\n=== Step 7: Wrong PIN test ===",
+  "Expected 400 Error: Current PIN is incorrect",
+  "\n=== Step 8: Admin login + users list ===",
+  "Admin got 6 users with wallet balances",
+  "\n=== Step 9: Single user detail ===",
+  "Single user retrieved: Mohammad Rahim, isActive: true",
+  "\n=== Step 10: User block করো ===",
+  "User is blocked: true",
+  "\n=== Step 11: Blocked user login test ===",
+  "Expected 401 Error: Your account is blocked",
+  "\n=== Step 12: Unblock করো ===",
+  "User is active again: true",
+  "Login successful after unblock"
+]

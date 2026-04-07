@@ -1,0 +1,28 @@
+import { Controller, Patch, Body, UseGuards, Get, Request } from '@nestjs/common';
+import { NotificationsService } from './notifications.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
+
+@ApiTags('Notifications')
+@ApiBearerAuth('access-token')
+@Controller('notifications')
+export class NotificationsController {
+  constructor(private readonly notificationsService: NotificationsService) {}
+
+  @Patch('fcm-token')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Firebase (FCM) টোকেন সেভ করা (পুশ নোটিফিকেশন পাওয়ার জন্য)' })
+  @ApiBody({ schema: { properties: { fcmToken: { type: 'string', example: 'fcm_token_here' } } } })
+  @ApiResponse({ status: 200, description: 'টোকেন সফলভাবে সেভ হয়েছে' })
+  saveFcmToken(@Request() req: any, @Body('fcmToken') fcmToken: string) {
+    return this.notificationsService.saveFcmToken(req.user.id, fcmToken);
+  }
+
+  @Get('my')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'নিজের সকল ইন-অ্যাপ নোটিফিকেশন চেক করা' })
+  @ApiResponse({ status: 200, description: 'লিস্ট সফলভাবে পাওয়া গেছে' })
+  getUserNotifications(@Request() req: any) {
+    return this.notificationsService.getUserNotifications(req.user.id);
+  }
+}

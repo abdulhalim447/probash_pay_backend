@@ -1,0 +1,61 @@
+[
+  "=== Step 1: Admin login ===",
+  "Admin Token received",
+  "\n=== Step 2: WhatsApp link add ===",
+  {
+    "id": "7b8fec0f-2994-4d4a-b228-f2031a31b24f",
+    "platform": "WHATSAPP",
+    "label": "Customer Support",
+    "url": "https://wa.me/60123456789",
+    "isActive": true,
+    "displayOrder": 1,
+    "createdAt": "2026-04-07T08:31:14.643Z",
+    "updatedAt": "2026-04-07T08:31:14.643Z"
+  },
+  "\n=== Step 3: Telegram add ===",
+  {
+    "id": "3c5899b5-7d1a-4e7d-9e9d-156d5f363aa0",
+    "platform": "TELEGRAM",
+    "label": "Probash Pay Official",
+    "url": "https://t.me/probashpay",
+    "isActive": true,
+    "displayOrder": 2,
+    "createdAt": "2026-04-07T08:31:14.671Z",
+    "updatedAt": "2026-04-07T08:31:14.671Z"
+  },
+  "\n=== Step 4: Facebook add ===",
+  {
+    "id": "7b5ee32c-e76a-4e71-8ce2-9771aff5c7cd",
+    "platform": "FACEBOOK",
+    "label": "Facebook Page",
+    "url": "https://facebook.com/probashpay",
+    "isActive": true,
+    "displayOrder": 3,
+    "createdAt": "2026-04-07T08:31:14.684Z",
+    "updatedAt": "2026-04-07T08:31:14.684Z"
+  },
+  "\n=== Step 5: Email add ===",
+  {
+    "id": "a994cace-4c98-43eb-8ec6-4e9b7293afb9",
+    "platform": "EMAIL",
+    "label": "Support Email",
+    "url": "mailto:support@probashpay.com",
+    "isActive": true,
+    "displayOrder": 4,
+    "createdAt": "2026-04-07T08:31:14.696Z",
+    "updatedAt": "2026-04-07T08:31:14.696Z"
+  },
+  "\n=== Step 6: Admin সব দেখো ===",
+  "Count: 4",
+  "\n=== Step 7: Public API test ===",
+  "Count: 4",
+  "\n=== Step 8: Toggle inactive ===",
+  "Public Count after toggle: 3",
+  "\n=== Step 9: Update ===",
+  "Updated Label: 24/7 Support",
+  "\n=== Step 10: Delete ===",
+  {
+    "message": "Deleted successfully"
+  },
+  "Admin Count after delete: 3"
+]

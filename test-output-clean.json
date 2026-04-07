@@ -1,0 +1,45 @@
+[
+  "=== Step 1: Current rate check (Public) ===",
+  {
+    "rate": 25.5,
+    "from": "MYR",
+    "to": "BDT",
+    "display": "1 MYR = 25.50 BDT"
+  },
+  "\n=== Step 2: Admin login ===",
+  "Admin Token received",
+  "\n=== Step 3: Rate history ===",
+  [],
+  "\n=== Step 4: Rate update ===",
+  {
+    "id": "8f4ad71f-0f80-47e6-9eae-6866001f7999",
+    "rate": 26.5,
+    "previousRate": 25.5,
+    "changedByAdminId": 1,
+    "createdAt": "2026-04-07T06:29:27.298Z"
+  },
+  "\n=== Step 5: Rate verify ===",
+  {
+    "rate": 26.5,
+    "from": "MYR",
+    "to": "BDT",
+    "display": "1 MYR = 26.50 BDT"
+  },
+  "\n=== Step 6: History verify ===",
+  [
+    {
+      "id": "8f4ad71f-0f80-47e6-9eae-6866001f7999",
+      "rate": "26.5000",
+      "previousRate": "25.5000",
+      "changedByAdminId": 1,
+      "createdAt": "2026-04-07T06:29:27.298Z",
+      "changePercent": "+3.92"
+    }
+  ],
+  "\n=== Step 7: Withdrawal ===",
+  {
+    "message": "Insufficient balance. Current: 0.00 MYR, Required: 20 MYR",
+    "error": "Bad Request",
+    "statusCode": 400
+  }
+]

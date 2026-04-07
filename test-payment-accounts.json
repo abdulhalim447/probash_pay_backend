@@ -1,0 +1,62 @@
+[
+  "=== Step 1: Admin login ===",
+  "Admin Token received",
+  "\n=== Step 2: bKash account add ===",
+  {
+    "id": "3567e6ca-168b-4424-bf2c-70db68205328",
+    "type": "BKASH",
+    "accountHolderName": "Probash Pay",
+    "accountNumber": "01700000000",
+    "bankName": null,
+    "branchName": null,
+    "routingNumber": null,
+    "country": "BD",
+    "isActive": true,
+    "displayOrder": 1,
+    "createdAt": "2026-04-07T06:40:49.607Z",
+    "updatedAt": "2026-04-07T06:40:49.607Z"
+  },
+  "\n=== Step 3: Bank account add ===",
+  {
+    "id": "cc4fcdc6-058b-4b56-9545-212b2998d8ea",
+    "type": "BANK_BD",
+    "accountHolderName": "Probash Pay Ltd",
+    "accountNumber": "1234567890",
+    "bankName": "Dutch-Bangla Bank",
+    "branchName": "Gulshan Branch",
+    "routingNumber": "090268457",
+    "country": "BD",
+    "isActive": true,
+    "displayOrder": 2,
+    "createdAt": "2026-04-07T06:40:49.635Z",
+    "updatedAt": "2026-04-07T06:40:49.635Z"
+  },
+  "\n=== Step 4: Malaysia bank add ===",
+  {
+    "id": "8d9d49e8-03df-44ac-af51-ff2514164a50",
+    "type": "BANK_MY",
+    "accountHolderName": "Probash Pay MY",
+    "accountNumber": "5621234567",
+    "bankName": "Maybank",
+    "branchName": "KL Main Branch",
+    "routingNumber": null,
+    "country": "MY",
+    "isActive": true,
+    "displayOrder": 3,
+    "createdAt": "2026-04-07T06:40:49.649Z",
+    "updatedAt": "2026-04-07T06:40:49.649Z"
+  },
+  "\n=== Step 5: Admin all accounts ===",
+  "Count: 3",
+  "\n=== Step 6: Public API (active accounts) ===",
+  "Count: 3",
+  "\n=== Step 7: Toggle active -> false (bKash) ===",
+  "Public Count after toggle: 2 (Bkash hidden)",
+  "\n=== Step 8: Update account ===",
+  "Updated Account Number: 9999999999",
+  "\n=== Step 9: Delete account ===",
+  {
+    "message": "Account deleted successfully"
+  },
+  "Admin Count after delete: 2"
+]
