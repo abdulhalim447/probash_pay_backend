@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Param, Patch, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Param, Patch, Request, Query } from '@nestjs/common';
 import { SupportTicketsService } from '../support-tickets/support-tickets.service';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { CreateReplyDto } from '../support-tickets/dto/create-reply.dto';
@@ -6,7 +6,7 @@ import { SenderType } from '../support-tickets/enums/sender-type.enum';
 import { TicketStatus } from '../support-tickets/enums/ticket-status.enum';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/enums/notification-type.enum';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('Admin / Tickets')
 @ApiBearerAuth('access-token')
@@ -20,8 +20,17 @@ export class AdminSupportTicketsController {
   @Get()
   @UseGuards(AdminGuard)
   @ApiOperation({ summary: 'সব টিকেট দেখা (সব ইউজারের)' })
-  getAllTickets() {
-    return this.supportTicketsService.getAllTickets();
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  async getAllTickets(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+  ) {
+    const result = await this.supportTicketsService.getAllTickets(page, limit);
+    return {
+      message: 'All tickets fetched',
+      ...result,
+    };
   }
 
   @Get(':id')

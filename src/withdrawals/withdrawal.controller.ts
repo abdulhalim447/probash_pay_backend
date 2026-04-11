@@ -6,11 +6,12 @@ import {
   Param,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { WithdrawalService } from './withdrawal.service';
 import { CreateWithdrawalDto } from './dto/create-withdrawal.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('Withdrawals')
 @ApiBearerAuth('access-token')
@@ -37,13 +38,19 @@ export class WithdrawalController {
 
   @Get('my')
   @ApiOperation({ summary: 'নিজের করা আগের সব উইথড্রয়াল রিকোয়েস্ট দেখা' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({ status: 200, description: 'লিস্ট সফলভাবে পাওয়া গেছে' })
-  async getMyWithdrawals(@Req() req) {
+  async getMyWithdrawals(
+    @Req() req,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+  ) {
     const userId = req.user.id.toString();
-    const withdrawals = await this.withdrawalService.getMyWithdrawals(userId);
+    const result = await this.withdrawalService.getMyWithdrawals(userId, page, limit);
     return {
       message: 'Withdrawals fetched successfully',
-      data: withdrawals,
+      ...result,
     };
   }
 

@@ -24,7 +24,7 @@ export class WalletService {
     const newWallet = this.walletRepository.create({
       userId,
       balance: 0,
-      currency: 'MYR',
+      currency: 'BDT',
       isActive: true,
     });
 
@@ -56,7 +56,7 @@ export class WalletService {
 
     if (Number(wallet.balance) < amount) {
       throw new BadRequestException(
-        `Insufficient balance. Current: ${wallet.balance} MYR, Required: ${amount} MYR`,
+        `Insufficient balance. Current: ${wallet.balance} BDT, Required: ${amount} BDT`,
       );
     }
 
@@ -82,21 +82,15 @@ export class WalletService {
       .execute();
   }
 
-  // ─── Get Wallet Balance with BDT Conversion ───
+  // ─── Get Wallet Balance ───
   async getWalletBalance(userId: string) {
     const wallet = await this.getWalletByUserId(userId);
-    const exchangeRate = await this.exchangeRateService.getCurrentRate();
-
-    const balanceMYR = Number(wallet.balance);
-    const rate = Number(exchangeRate);
-    const balanceBDT = balanceMYR * rate;
+    const balance = Number(wallet.balance);
 
     return {
-      balanceMYR: parseFloat(balanceMYR.toFixed(2)),
-      balanceBDT: parseFloat(balanceBDT.toFixed(2)),
-      exchangeRate: rate,
+      balance: parseFloat(balance.toFixed(2)),
       currency: wallet.currency,
-      display: `${balanceMYR.toFixed(2)} MYR ≈ ${balanceBDT.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} BDT`,
+      display: `${balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} BDT`,
     };
   }
 }

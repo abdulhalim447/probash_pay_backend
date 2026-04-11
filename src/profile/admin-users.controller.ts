@@ -4,11 +4,12 @@ import {
   Patch,
   Param,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('Admin / Users')
 @ApiBearerAuth('access-token')
@@ -19,9 +20,18 @@ export class AdminUsersController {
 
   @Get()
   @ApiOperation({ summary: 'সব ইউজারের লিস্ট দেখা' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({ status: 200, description: 'লিস্ট সফলভাবে পাওয়া গেছে' })
-  async getAllUsers() {
-    return await this.profileService.getAllUsers();
+  async getAllUsers(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+  ) {
+    const result = await this.profileService.getAllUsers(page, limit);
+    return {
+      message: 'Users fetched successfully',
+      ...result,
+    };
   }
 
   @Get(':id')
@@ -36,5 +46,19 @@ export class AdminUsersController {
   @ApiResponse({ status: 200, description: 'ইউজারের স্ট্যাটাস সফলভাবে পরিবর্তন হয়েছে' })
   async toggleUserActive(@Param('id') id: string) {
     return await this.profileService.toggleUserActive(id);
+  }
+
+  @Patch(':id/verify')
+  @ApiOperation({ summary: 'পেন্ডিং ইউজারকে ভেরিফাই (অ্যাপ্রুভ) করা' })
+  @ApiResponse({ status: 200, description: 'ইউজার সফলভাবে ভেরিফাই হয়েছে' })
+  async verifyUser(@Param('id') id: string) {
+    return await this.profileService.verifyUser(id);
+  }
+
+  @Patch(':id/reject')
+  @ApiOperation({ summary: 'পেন্ডিং ইউজারকে রিজেক্ট (ব্লক) করা' })
+  @ApiResponse({ status: 200, description: 'ইউজারকে রিজেক্ট করা হয়েছে' })
+  async rejectUser(@Param('id') id: string) {
+    return await this.profileService.rejectUser(id);
   }
 }

@@ -5,9 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { Withdrawal, WithdrawalStatus } from './withdrawal.entity';
 import { CreateWithdrawalDto } from './dto/create-withdrawal.dto';
 import { CompleteWithdrawalDto } from './dto/complete-withdrawal.dto';
+import { User } from '../users/user.entity';
 import { WalletService } from '../wallet/wallet.service';
 import { WalletTransactionService } from '../wallet-transactions/wallet-transaction.service';
 import { TransactionType } from '../wallet-transactions/wallet-transaction.entity';
@@ -20,6 +22,8 @@ export class WithdrawalService {
   constructor(
     @InjectRepository(Withdrawal)
     private withdrawalRepo: Repository<Withdrawal>,
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
     private walletService: WalletService,
     private walletTransactionService: WalletTransactionService,
     private appSettingsService: AppSettingsService,
@@ -33,6 +37,16 @@ export class WithdrawalService {
     userId: string,
     dto: CreateWithdrawalDto,
   ): Promise<Withdrawal> {
+    // 0️⃣ Verify PIN
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const pinMatch = await bcrypt.compare(dto.pin, user.pin);
+    if (!pinMatch) {
+      throw new BadRequestException('Wrong Pin');
+    }
+
     // 1️⃣ Get exchange rate & limits
     const exchangeRate = await this.appSettingsService.getExchangeRate();
     const { minBDT, maxBDT } = await this.appSettingsService.getWithdrawalLimits();
@@ -55,7 +69,7 @@ export class WithdrawalService {
     );
 
     // 4️⃣ Deduct from wallet (fails if insufficient balance)
-    await this.walletService.deductBalance(userId, amountMYR);
+    await this.walletService.deductBalance(userId, dto.amountBDT);
 
     // 5️⃣ Create withdrawal record
     const withdrawal = this.withdrawalRepo.create({
@@ -80,8 +94,8 @@ export class WithdrawalService {
     await this.walletTransactionService.createTransaction({
       userId,
       type: TransactionType.WITHDRAWAL,
-      amount: amountMYR,
-      currency: 'MYR',
+      amount: dto.amountBDT,
+      currency: 'BDT',
       status: 'PENDING' as any,
       referenceId: savedWithdrawal.id,
       description: `Withdrawal ${dto.amountBDT} BDT via ${dto.payoutMethod}`,
@@ -93,11 +107,24 @@ export class WithdrawalService {
   // ══════════════════════════════════════════════════════════
   //  USER: Get My Withdrawals
   // ══════════════════════════════════════════════════════════
-  async getMyWithdrawals(userId: string): Promise<Withdrawal[]> {
-    return await this.withdrawalRepo.find({
+  async getMyWithdrawals(userId: string, page: number = 1, limit: number = 20): Promise<any> {
+    const skip = (page - 1) * limit;
+    const [data, total] = await this.withdrawalRepo.findAndCount({
       where: { userId },
       order: { createdAt: 'DESC' },
+      skip,
+      take: limit,
     });
+
+    return {
+      data,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   // ══════════════════════════════════════════════════════════
@@ -116,10 +143,15 @@ export class WithdrawalService {
   // ══════════════════════════════════════════════════════════
   //  ADMIN: Get All Withdrawals (with filters)
   // ══════════════════════════════════════════════════════════
-  async getAllWithdrawals(filters: {
-    status?: string;
-    userId?: string;
-  }): Promise<Withdrawal[]> {
+  async getAllWithdrawals(
+    filters: {
+      status?: string;
+      userId?: string;
+    },
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<any> {
+    const skip = (page - 1) * limit;
     const query = this.withdrawalRepo.createQueryBuilder('w');
 
     if (filters.status) {
@@ -130,7 +162,19 @@ export class WithdrawalService {
     }
 
     query.orderBy('w.created_at', 'DESC');
-    return await query.getMany();
+    query.skip(skip).take(limit);
+
+    const [data, total] = await query.getManyAndCount();
+
+    return {
+      data,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   // ══════════════════════════════════════════════════════════
@@ -232,10 +276,10 @@ export class WithdrawalService {
       );
     }
 
-    // 💰 Refund MYR back to user's wallet
+    // 💰 Refund BDT back to user's wallet
     await this.walletService.refundBalance(
       withdrawal.userId,
-      Number(withdrawal.amountMYR),
+      Number(withdrawal.amountBDT),
     );
 
     withdrawal.status = WithdrawalStatus.REJECTED;

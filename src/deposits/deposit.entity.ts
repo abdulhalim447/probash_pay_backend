@@ -27,6 +27,12 @@ export class Deposit {
   @Column({ type: 'decimal', precision: 10, scale: 2, name: 'amount' })
   amount: number;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, name: 'amount_bdt', nullable: true })
+  amountBdt: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, name: 'exchange_rate', nullable: true })
+  exchangeRate: number;
+
   @Column({ default: 'MYR', name: 'currency' })
   currency: string;
 

@@ -26,7 +26,7 @@ export class Wallet {
   })
   balance: number;
 
-  @Column({ default: 'MYR', name: 'currency' })
+  @Column({ default: 'BDT', name: 'currency' })
   currency: string;
 
   @Column({ default: true, name: 'is_active' })

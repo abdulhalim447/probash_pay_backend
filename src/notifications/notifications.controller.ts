@@ -1,7 +1,7 @@
-import { Controller, Patch, Body, UseGuards, Get, Request } from '@nestjs/common';
+import { Controller, Patch, Body, UseGuards, Get, Request, Query } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('Notifications')
 @ApiBearerAuth('access-token')
@@ -21,8 +21,18 @@ export class NotificationsController {
   @Get('my')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'নিজের সকল ইন-অ্যাপ নোটিফিকেশন চেক করা' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({ status: 200, description: 'লিস্ট সফলভাবে পাওয়া গেছে' })
-  getUserNotifications(@Request() req: any) {
-    return this.notificationsService.getUserNotifications(req.user.id);
+  async getUserNotifications(
+    @Request() req: any,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+  ) {
+    const result = await this.notificationsService.getUserNotifications(req.user.id, page, limit);
+    return {
+      message: 'Notifications fetched',
+      ...result,
+    };
   }
 }

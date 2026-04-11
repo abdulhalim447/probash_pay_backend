@@ -104,11 +104,23 @@ export class NotificationsService {
     return { data, total };
   }
 
-  async getUserNotifications(userId: string): Promise<Notification[]> {
-    return this.notificationRepository.find({
+  async getUserNotifications(userId: string, page: number = 1, limit: number = 20): Promise<any> {
+    const skip = (page - 1) * limit;
+    const [data, total] = await this.notificationRepository.findAndCount({
       where: { userId },
       order: { createdAt: 'DESC' },
-      take: 20,
+      skip,
+      take: limit,
     });
+
+    return {
+      data,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }

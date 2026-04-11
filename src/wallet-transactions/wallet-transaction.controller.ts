@@ -13,13 +13,19 @@ export class WalletTransactionController {
   @UseGuards(JwtAuthGuard)
   @Get('transactions/my')
   @ApiOperation({ summary: 'নিজের সব ওয়ালেট ট্রানজ্যাকশন হিস্টোরি (ডিপোজিট, উইথড্রয়াল, রিফান্ড)' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({ status: 200, description: 'হিস্টোরি সফলভাবে পাওয়া গেছে' })
-  async getMyTransactions(@Req() req) {
+  async getMyTransactions(
+    @Req() req,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+  ) {
     const userId = req.user.id.toString();
-    const transactions = await this.walletTransactionService.getUserTransactions(userId);
+    const result = await this.walletTransactionService.getUserTransactions(userId, page, limit);
     return {
       message: 'Transactions fetched successfully',
-      data: transactions,
+      ...result,
     };
   }
 
@@ -30,19 +36,23 @@ export class WalletTransactionController {
   @ApiQuery({ name: 'userId', required: false, description: 'নির্দিষ্ট ইউজারের জন্য ফিল্টার' })
   @ApiQuery({ name: 'type', required: false, description: 'টাইপ: DEPOSIT, WITHDRAWAL, REFUND' })
   @ApiQuery({ name: 'status', required: false, description: 'স্ট্যাটাস: PENDING, SUCCESS, REJECTED' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   async getAllTransactions(
     @Query('userId') userId?: string,
     @Query('type') type?: string,
     @Query('status') status?: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
   ) {
-    const transactions = await this.walletTransactionService.getAllTransactions({
-      userId,
-      type,
-      status,
-    });
+    const result = await this.walletTransactionService.getAllTransactions(
+      { userId, type, status },
+      page,
+      limit,
+    );
     return {
       message: 'All transactions fetched',
-      data: transactions,
+      ...result,
     };
   }
 }

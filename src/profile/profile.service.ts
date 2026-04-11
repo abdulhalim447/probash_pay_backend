@@ -26,10 +26,6 @@ export class ProfileService {
     if (!user) throw new NotFoundException('User not found');
 
     const wallet = await this.walletService.getWalletByUserId(userId);
-    const exchangeRate = await this.appSettingsService.getExchangeRate();
-
-    const balanceMYR = Number(wallet.balance);
-    const balanceBDT = balanceMYR * exchangeRate;
 
     return {
       id: user.id,
@@ -39,9 +35,8 @@ export class ProfileService {
       isActive: user.isActive,
       createdAt: user.createdAt,
       wallet: {
-        balanceMYR,
-        balanceBDT,
-        currency: 'MYR',
+        balance: Number(wallet.balance),
+        currency: wallet.currency,
       },
     };
   }
@@ -82,13 +77,18 @@ export class ProfileService {
     return { message: 'PIN changed successfully' };
   }
 
-  async getAllUsers(): Promise<any[]> {
-    const users = await this.userRepo.find({ order: { createdAt: 'DESC' } });
-    const result: any[] = [];
-    
+  async getAllUsers(page: number = 1, limit: number = 20): Promise<any> {
+    const skip = (page - 1) * limit;
+    const [users, total] = await this.userRepo.findAndCount({
+      order: { createdAt: 'DESC' },
+      skip,
+      take: limit,
+    });
+
+    const data: any[] = [];
     for (const user of users) {
       const wallet = await this.walletService.getWalletByUserId(user.id);
-      result.push({
+      data.push({
         id: user.id,
         fullName: user.fullName,
         phone: user.phone,
@@ -96,12 +96,21 @@ export class ProfileService {
         isActive: user.isActive,
         createdAt: user.createdAt,
         wallet: {
-          balanceMYR: Number(wallet.balance),
+          balance: Number(wallet.balance),
+          currency: wallet.currency,
         },
       });
     }
 
-    return result;
+    return {
+      data,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async toggleUserActive(userId: string): Promise<User> {
@@ -116,6 +125,30 @@ export class ProfileService {
     } else {
       user.status = 'active' as any;
     }
+
+    return await this.userRepo.save(user);
+  }
+
+  async verifyUser(userId: string): Promise<User> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    if (user.status === 'active' as any) {
+      throw new BadRequestException('User is already verified and active');
+    }
+
+    user.status = 'active' as any;
+    user.isActive = true;
+
+    return await this.userRepo.save(user);
+  }
+
+  async rejectUser(userId: string): Promise<User> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    user.status = 'blocked' as any;
+    user.isActive = false;
 
     return await this.userRepo.save(user);
   }

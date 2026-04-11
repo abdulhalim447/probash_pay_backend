@@ -43,13 +43,15 @@ export class ExchangeRateService {
     return savedRecord;
   }
 
-  async getHistory(): Promise<any[]> {
-    const records = await this.exchangeRateHistoryRepo.find({
+  async getHistory(page: number = 1, limit: number = 20): Promise<any> {
+    const skip = (page - 1) * limit;
+    const [records, total] = await this.exchangeRateHistoryRepo.findAndCount({
       order: { createdAt: 'DESC' },
-      take: 50,
+      skip,
+      take: limit,
     });
 
-    return records.map((record) => {
+    const data = records.map((record) => {
       let changePercent = '0.00';
       if (record.previousRate && Number(record.previousRate) > 0) {
         const change =
@@ -64,5 +66,15 @@ export class ExchangeRateService {
         changePercent,
       };
     });
+
+    return {
+      data,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }

@@ -26,12 +26,25 @@ export class SupportTicketsService {
     return await this.ticketRepository.save(ticket);
   }
 
-  async getMyTickets(userId: string): Promise<SupportTicket[]> {
-    return await this.ticketRepository.find({
+  async getMyTickets(userId: string, page: number = 1, limit: number = 20): Promise<any> {
+    const skip = (page - 1) * limit;
+    const [data, total] = await this.ticketRepository.findAndCount({
       where: { userId },
       order: { createdAt: 'DESC' },
-      relations: ['replies'], // Load replies to count or context
+      relations: ['replies'],
+      skip,
+      take: limit,
     });
+
+    return {
+      data,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async getMyTicketById(userId: string, ticketId: string): Promise<SupportTicket> {
@@ -82,11 +95,24 @@ export class SupportTicketsService {
     return savedReply;
   }
 
-  async getAllTickets(): Promise<SupportTicket[]> {
-    return await this.ticketRepository.find({
+  async getAllTickets(page: number = 1, limit: number = 20): Promise<any> {
+    const skip = (page - 1) * limit;
+    const [data, total] = await this.ticketRepository.findAndCount({
       relations: ['user'],
       order: { createdAt: 'DESC' },
+      skip,
+      take: limit,
     });
+
+    return {
+      data,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async getTicketById(ticketId: string): Promise<SupportTicket> {

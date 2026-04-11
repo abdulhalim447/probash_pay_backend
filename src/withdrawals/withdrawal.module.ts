@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Withdrawal } from './withdrawal.entity';
+import { User } from '../users/user.entity';
 import { WithdrawalService } from './withdrawal.service';
 import { WithdrawalController } from './withdrawal.controller';
 import { AdminWithdrawalController } from './admin-withdrawal.controller';
@@ -11,7 +12,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Withdrawal]),
+    TypeOrmModule.forFeature([Withdrawal, User]),
     WalletModule,
     WalletTransactionModule,
     AppSettingsModule,

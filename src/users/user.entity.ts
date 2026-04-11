@@ -33,7 +33,7 @@ export class User {
   @Column({ nullable: true, unique: true })
   email: string;
 
-  @Column({ default: true })
+  @Column({ default: false })
   isActive: boolean;
 
   @Column({ nullable: true })
@@ -41,7 +41,7 @@ export class User {
 
 
 
-  @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
+  @Column({ type: 'enum', enum: UserStatus, default: UserStatus.PENDING })
   status: UserStatus;
 
   @Column({ type: 'enum', enum: KycStatus, default: KycStatus.UNVERIFIED })

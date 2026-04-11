@@ -33,7 +33,7 @@ export class WalletTransaction {
   @Column({ type: 'decimal', precision: 10, scale: 2, name: 'amount' })
   amount: number;
 
-  @Column({ default: 'MYR', name: 'currency' })
+  @Column({ default: 'BDT', name: 'currency' })
   currency: string;
 
   @Column({

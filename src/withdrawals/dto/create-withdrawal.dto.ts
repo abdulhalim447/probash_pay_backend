@@ -11,6 +11,11 @@ import {
 import { PayoutMethod, PayoutType } from '../withdrawal.entity';
 
 export class CreateWithdrawalDto {
+  @ApiProperty({ example: '123456', description: 'আপনার ৬ ডিজিটের পিন নম্বর (রেজিস্ট্রেশনে দেওয়া)' })
+  @IsString()
+  @IsNotEmpty({ message: 'PIN is required' })
+  pin: string;
+
   @ApiProperty({ example: 1000, description: 'উত্তোলনের পরিমাণ (টাকা/BDT)', minimum: 1 })
   @IsNumber()
   @Min(1, { message: 'Amount must be greater than 0' })

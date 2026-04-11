@@ -6,6 +6,7 @@ import { DepositController } from './deposit.controller';
 import { WalletModule } from '../wallet/wallet.module';
 import { WalletTransactionModule } from '../wallet-transactions/wallet-transaction.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { AppSettingsModule } from '../app-settings/app-settings.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     WalletModule,
     WalletTransactionModule,
     NotificationsModule,
+    AppSettingsModule,
   ],
   controllers: [DepositController],
   providers: [DepositService],

@@ -25,17 +25,22 @@ export class AdminWithdrawalController {
   @ApiOperation({ summary: 'সব ইউজারের উইথড্রয়াল রিকোয়েস্ট লিস্ট দেখা' })
   @ApiQuery({ name: 'status', required: false, description: 'ফিল্টার: PENDING, PROCESSING, COMPLETED, REJECTED' })
   @ApiQuery({ name: 'userId', required: false, description: 'নির্দিষ্ট ইউজারের জন্য ফিল্টার' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   async getAllWithdrawals(
     @Query('status') status?: string,
     @Query('userId') userId?: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
   ) {
-    const withdrawals = await this.withdrawalService.getAllWithdrawals({
-      status,
-      userId,
-    });
+    const result = await this.withdrawalService.getAllWithdrawals(
+      { status, userId },
+      page,
+      limit,
+    );
     return {
       message: 'All withdrawals fetched',
-      data: withdrawals,
+      ...result,
     };
   }
 

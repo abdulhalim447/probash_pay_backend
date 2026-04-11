@@ -17,9 +17,8 @@ export class WalletController {
   @UseGuards(JwtAuthGuard)
   @Get('balance')
   @ApiOperation({
-    summary: 'ওয়ালেট ব্যালেন্স দেখা (MYR + BDT কনভার্টেড)',
-    description:
-      'লগইনকৃত ইউজারের ওয়ালেট ব্যালেন্স MYR এ এবং বর্তমান এক্সচেঞ্জ রেট অনুযায়ী BDT কনভার্টেড ব্যালেন্স সহ রিটার্ন করে।',
+    summary: 'ওয়ালেট ব্যালেন্স দেখা (BDT)',
+    description: 'লগইনকৃত ইউজারের বর্তমান BDT ওয়ালেট ব্যালেন্স রিটার্ন করে।',
   })
   @ApiResponse({
     status: 200,
@@ -28,11 +27,9 @@ export class WalletController {
       example: {
         message: 'Wallet balance fetched successfully',
         data: {
-          balanceMYR: 500.0,
-          balanceBDT: 13250.0,
-          exchangeRate: 26.5,
-          currency: 'MYR',
-          display: '500.00 MYR ≈ 13,250.00 BDT',
+          balance: 13250.0,
+          currency: 'BDT',
+          display: '13,250.00 BDT',
         },
       },
     },

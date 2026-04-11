@@ -38,13 +38,19 @@ export class DepositController {
   @UseGuards(JwtAuthGuard)
   @Get('deposits/my')
   @ApiOperation({ summary: 'ইউজারের নিজের করা আগের সব ডিপোজিট দেখা' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({ status: 200, description: 'লিস্ট সফলভাবে পাওয়া গেছে' })
-  async getMyDeposits(@Req() req) {
+  async getMyDeposits(
+    @Req() req,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+  ) {
     const userId = req.user.id.toString();
-    const deposits = await this.depositService.getMyDeposits(userId);
+    const result = await this.depositService.getMyDeposits(userId, page, limit);
     return {
       message: 'Deposits fetched successfully',
-      data: deposits,
+      ...result,
     };
   }
 
@@ -53,11 +59,17 @@ export class DepositController {
   @Get('admin/deposits')
   @ApiOperation({ summary: 'এডমিন: সব ইউজারের ডিপোজিট রিকোয়েস্ট দেখা' })
   @ApiQuery({ name: 'status', required: false, description: 'ফিল্টার: PENDING, SUCCESS, REJECTED' })
-  async getAllDeposits(@Query('status') status?: string) {
-    const deposits = await this.depositService.getAllDeposits(status);
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  async getAllDeposits(
+    @Query('status') status?: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+  ) {
+    const result = await this.depositService.getAllDeposits(status, page, limit);
     return {
       message: 'All deposits fetched',
-      data: deposits,
+      ...result,
     };
   }
 

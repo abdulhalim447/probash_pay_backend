@@ -19,18 +19,36 @@ export class WalletTransactionService {
     await this.walletTransactionRepo.update({ referenceId }, { status: status as TransactionStatus });
   }
 
-  async getUserTransactions(userId: string): Promise<WalletTransaction[]> {
-    return await this.walletTransactionRepo.find({
+  async getUserTransactions(userId: string, page: number = 1, limit: number = 20): Promise<any> {
+    const skip = (page - 1) * limit;
+    const [data, total] = await this.walletTransactionRepo.findAndCount({
       where: { userId },
       order: { createdAt: 'DESC' },
+      skip,
+      take: limit,
     });
+
+    return {
+      data,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
-  async getAllTransactions(filters: {
-    userId?: string;
-    type?: string;
-    status?: string;
-  }): Promise<WalletTransaction[]> {
+  async getAllTransactions(
+    filters: {
+      userId?: string;
+      type?: string;
+      status?: string;
+    },
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<any> {
+    const skip = (page - 1) * limit;
     const query = this.walletTransactionRepo.createQueryBuilder('transaction');
 
     if (filters.userId) {
@@ -44,7 +62,18 @@ export class WalletTransactionService {
     }
 
     query.orderBy('transaction.createdAt', 'DESC');
+    query.skip(skip).take(limit);
 
-    return await query.getMany();
+    const [data, total] = await query.getManyAndCount();
+
+    return {
+      data,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }

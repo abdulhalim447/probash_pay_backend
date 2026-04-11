@@ -19,7 +19,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private walletService: WalletService,
-  ) {}
+  ) { }
 
   // ─── User Register ───
   async userRegister(phone: string, pin: string, fullName: string) {
@@ -38,7 +38,7 @@ export class AuthService {
 
     const savedUser = await this.userRepo.save(user);
     await this.walletService.createWallet(savedUser.id.toString());
-    
+
     return { message: 'Registration successful' };
   }
 
@@ -49,6 +49,13 @@ export class AuthService {
 
     if (user.status === 'blocked')
       throw new UnauthorizedException('Your account is blocked');
+
+    if (user.status === 'pending') {
+      throw new UnauthorizedException({
+        message: 'Your account is pending verification by the admin.',
+        status: 'pending',
+      });
+    }
 
     const pinMatch = await bcrypt.compare(pin, user.pin);
     if (!pinMatch) throw new UnauthorizedException('Invalid phone or PIN');

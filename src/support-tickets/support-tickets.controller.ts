@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Param, Query } from '@nestjs/common';
 import { SupportTicketsService } from './support-tickets.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { CreateReplyDto } from './dto/create-reply.dto';
 import { SenderType } from './enums/sender-type.enum';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('Tickets')
 @ApiBearerAuth('access-token')
@@ -23,8 +23,18 @@ export class SupportTicketsController {
   @Get('my')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'নিজের সব টিকেট দেখা' })
-  getMyTickets(@Request() req: any) {
-    return this.supportTicketsService.getMyTickets(req.user.id);
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  async getMyTickets(
+    @Request() req: any,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+  ) {
+    const result = await this.supportTicketsService.getMyTickets(req.user.id, page, limit);
+    return {
+      message: 'Tickets fetched successfully',
+      ...result,
+    };
   }
 
   @Get('my/:id')
