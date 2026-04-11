@@ -11,6 +11,8 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePinDto } from './dto/change-pin.dto';
 import { WalletService } from '../wallet/wallet.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/enums/notification-type.enum';
 
 @Injectable()
 export class ProfileService {
@@ -19,6 +21,7 @@ export class ProfileService {
     private readonly userRepo: Repository<User>,
     private readonly walletService: WalletService,
     private readonly appSettingsService: AppSettingsService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async getProfile(userId: string): Promise<any> {
@@ -140,7 +143,21 @@ export class ProfileService {
     user.status = 'active' as any;
     user.isActive = true;
 
-    return await this.userRepo.save(user);
+    const savedUser = await this.userRepo.save(user);
+
+    // Trigger Push Notification
+    try {
+      await this.notificationsService.sendToUser(
+        user.id,
+        'Account Verified! 🎉',
+        'Your account has been verified. You can now login and explore all features.',
+        NotificationType.ACCOUNT_VERIFIED,
+      );
+    } catch (error) {
+      console.error('Failed to send verification notification', error);
+    }
+
+    return savedUser;
   }
 
   async rejectUser(userId: string): Promise<User> {
@@ -150,6 +167,20 @@ export class ProfileService {
     user.status = 'blocked' as any;
     user.isActive = false;
 
-    return await this.userRepo.save(user);
+    const savedUser = await this.userRepo.save(user);
+
+    // Trigger Push Notification
+    try {
+      await this.notificationsService.sendToUser(
+        user.id,
+        'Account Verification Failed ❌',
+        'Unfortunately, your account verification has been rejected.',
+        NotificationType.ACCOUNT_REJECTED,
+      );
+    } catch (error) {
+      console.error('Failed to send rejection notification', error);
+    }
+
+    return savedUser;
   }
 }

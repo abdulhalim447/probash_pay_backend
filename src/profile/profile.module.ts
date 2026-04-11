@@ -6,12 +6,14 @@ import { ProfileController } from './profile.controller';
 import { AdminUsersController } from './admin-users.controller';
 import { WalletModule } from '../wallet/wallet.module';
 import { AppSettingsModule } from '../app-settings/app-settings.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     WalletModule,
     AppSettingsModule,
+    NotificationsModule,
   ],
   controllers: [ProfileController, AdminUsersController],
   providers: [ProfileService],
