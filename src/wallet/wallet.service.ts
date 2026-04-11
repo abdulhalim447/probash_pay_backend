@@ -2,12 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Wallet } from './wallet.entity';
+import { ExchangeRateService } from '../exchange-rate/exchange-rate.service';
 
 @Injectable()
 export class WalletService {
   constructor(
     @InjectRepository(Wallet)
     private walletRepository: Repository<Wallet>,
+    private readonly exchangeRateService: ExchangeRateService,
   ) {}
 
   async createWallet(userId: string): Promise<Wallet> {
@@ -78,5 +80,23 @@ export class WalletService {
       })
       .where('user_id = :userId', { userId })
       .execute();
+  }
+
+  // ─── Get Wallet Balance with BDT Conversion ───
+  async getWalletBalance(userId: string) {
+    const wallet = await this.getWalletByUserId(userId);
+    const exchangeRate = await this.exchangeRateService.getCurrentRate();
+
+    const balanceMYR = Number(wallet.balance);
+    const rate = Number(exchangeRate);
+    const balanceBDT = balanceMYR * rate;
+
+    return {
+      balanceMYR: parseFloat(balanceMYR.toFixed(2)),
+      balanceBDT: parseFloat(balanceBDT.toFixed(2)),
+      exchangeRate: rate,
+      currency: wallet.currency,
+      display: `${balanceMYR.toFixed(2)} MYR ≈ ${balanceBDT.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} BDT`,
+    };
   }
 }
