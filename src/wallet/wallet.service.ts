@@ -86,11 +86,13 @@ export class WalletService {
   async getWalletBalance(userId: string) {
     const wallet = await this.getWalletByUserId(userId);
     const balance = Number(wallet.balance);
+    const exchangeRate = await this.exchangeRateService.getCurrentRate();
 
     return {
       balance: parseFloat(balance.toFixed(2)),
       currency: wallet.currency,
       display: `${balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} BDT`,
+      exchangeRate: Number(exchangeRate),
     };
   }
 }

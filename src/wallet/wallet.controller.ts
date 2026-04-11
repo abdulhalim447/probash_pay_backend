@@ -30,6 +30,7 @@ export class WalletController {
           balance: 13250.0,
           currency: 'BDT',
           display: '13,250.00 BDT',
+          exchangeRate: 26.50,
         },
       },
     },
