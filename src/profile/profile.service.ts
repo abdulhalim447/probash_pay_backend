@@ -35,7 +35,10 @@ export class ProfileService {
       fullName: user.fullName,
       phone: user.phone,
       email: user.email,
-      isActive: user.isActive,
+      profilePhoto: user.profilePhoto,
+      status: user.status,
+      kycStatus: user.kycStatus,
+      referralCode: user.referralCode,
       createdAt: user.createdAt,
       wallet: {
         balance: Number(wallet.balance),
