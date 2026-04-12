@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, ILike } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/user.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -76,11 +76,12 @@ export class ProfileService {
 
   async getAllUsers(page: number = 1, limit: number = 20, search?: string): Promise<any> {
     const skip = (page - 1) * limit;
+    const searchTerm = search?.trim();
     
-    const whereCondition = search
+    const whereCondition = searchTerm
       ? [
-          { fullName: Like(`%${search}%`) },
-          { phone: Like(`%${search}%`) },
+          { fullName: ILike(`%${searchTerm}%`) },
+          { phone: ILike(`%${searchTerm}%`) },
         ]
       : {};
 

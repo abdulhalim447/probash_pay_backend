@@ -32,6 +32,9 @@ import { SupportTicket } from './support-tickets/support-ticket.entity';
 import { TicketReply } from './support-tickets/ticket-reply.entity';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { UploadController } from './uploads/upload.controller';
+import { BiometricModule } from './biometric/biometric.module';
+import { BiometricKey } from './biometric/entities/biometric-key.entity';
+import { BiometricChallenge } from './biometric/entities/biometric-challenge.entity';
 
 @Module({
   imports: [
@@ -45,7 +48,7 @@ import { UploadController } from './uploads/upload.controller';
         username: configService.get<string>('DB_USERNAME', 'postgres'),
         password: configService.get<string>('DB_PASSWORD', 'postgres'),
         database: configService.get<string>('DB_NAME', 'postgres'),
-        entities: [User, Admin, Wallet, Deposit, WalletTransaction, AppSetting, Withdrawal, ExchangeRateHistory, PaymentAccount, Notice, SocialLink, Notification, SupportTicket, TicketReply],
+        entities: [User, Admin, Wallet, Deposit, WalletTransaction, AppSetting, Withdrawal, ExchangeRateHistory, PaymentAccount, Notice, SocialLink, Notification, SupportTicket, TicketReply, BiometricKey, BiometricChallenge],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -64,6 +67,7 @@ import { UploadController } from './uploads/upload.controller';
     NotificationsModule,
     SupportTicketsModule,
     CloudinaryModule,
+    BiometricModule,
   ],
   controllers: [AppController, UploadController],
   providers: [AppService],
