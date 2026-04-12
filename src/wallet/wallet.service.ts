@@ -50,6 +50,16 @@ export class WalletService {
       .execute();
   }
 
+  // ─── Set Exact Balance (for admin) ───
+  async setBalance(userId: string, newBalance: number): Promise<void> {
+    await this.walletRepository
+      .createQueryBuilder()
+      .update(Wallet)
+      .set({ balance: newBalance })
+      .where('user_id = :userId', { userId })
+      .execute();
+  }
+
   // ─── Deduct Balance (for withdrawals) ───
   async deductBalance(userId: string, amount: number): Promise<void> {
     const wallet = await this.getWalletByUserId(userId);

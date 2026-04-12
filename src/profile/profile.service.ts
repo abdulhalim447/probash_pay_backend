@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../users/user.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePinDto } from './dto/change-pin.dto';
+import { AdminEditUserDto } from './dto/admin-edit-user.dto';
 import { WalletService } from '../wallet/wallet.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -174,5 +175,31 @@ export class ProfileService {
     }
 
     return savedUser;
+  }
+
+  async adminEditUser(userId: string, dto: AdminEditUserDto): Promise<any> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    if (dto.fullName) user.fullName = dto.fullName;
+    if (dto.phone) user.phone = dto.phone;
+    if (dto.kycStatus) user.kycStatus = dto.kycStatus;
+    
+    if (dto.status) {
+      user.status = dto.status;
+      user.isActive = dto.status === 'active' as any;
+    }
+
+    if (dto.pin) {
+      user.pin = await bcrypt.hash(dto.pin, 10);
+    }
+
+    await this.userRepo.save(user);
+
+    if (dto.walletBalance !== undefined && dto.walletBalance !== null) {
+      await this.walletService.setBalance(userId, dto.walletBalance);
+    }
+
+    return this.getProfile(userId);
   }
 }

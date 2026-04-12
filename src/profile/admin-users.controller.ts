@@ -5,8 +5,10 @@ import {
   Param,
   UseGuards,
   Query,
+  Body,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
+import { AdminEditUserDto } from './dto/admin-edit-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
@@ -60,5 +62,12 @@ export class AdminUsersController {
   @ApiResponse({ status: 200, description: 'ইউজারকে রিজেক্ট করা হয়েছে' })
   async rejectUser(@Param('id') id: string) {
     return await this.profileService.rejectUser(id);
+  }
+
+  @Patch(':id/edit')
+  @ApiOperation({ summary: 'অ্যাডমিন কর্তৃক ইউজারের ডাটা আপডেট (ব্যালেন্স, পিন সহ)' })
+  @ApiResponse({ status: 200, description: 'ইউজারের তথ্য সফলভাবে আপডেট হয়েছে' })
+  async editUser(@Param('id') id: string, @Body() dto: AdminEditUserDto) {
+    return await this.profileService.adminEditUser(id, dto);
   }
 }
