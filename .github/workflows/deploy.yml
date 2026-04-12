@@ -1,0 +1,26 @@
+name: Deploy Backend to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /var/www/probash_pay_backend
+            git pull origin main
+            pnpm install --frozen-lockfile
+            pnpm run build
+            pm2 restart probash-pay
+            echo "✅ Deploy successful!"
