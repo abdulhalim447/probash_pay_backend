@@ -6,6 +6,7 @@ import {
   UseGuards,
   Query,
   Body,
+  Delete,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { AdminEditUserDto } from './dto/admin-edit-user.dto';
@@ -24,12 +25,14 @@ export class AdminUsersController {
   @ApiOperation({ summary: 'সব ইউজারের লিস্ট দেখা' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'নাম বা নাম্বার দিয়ে সার্চ' })
   @ApiResponse({ status: 200, description: 'লিস্ট সফলভাবে পাওয়া গেছে' })
   async getAllUsers(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
+    @Query('search') search?: string,
   ) {
-    const result = await this.profileService.getAllUsers(page, limit);
+    const result = await this.profileService.getAllUsers(page, limit, search);
     return {
       message: 'Users fetched successfully',
       ...result,
@@ -69,5 +72,12 @@ export class AdminUsersController {
   @ApiResponse({ status: 200, description: 'ইউজারের তথ্য সফলভাবে আপডেট হয়েছে' })
   async editUser(@Param('id') id: string, @Body() dto: AdminEditUserDto) {
     return await this.profileService.adminEditUser(id, dto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'সম্পূর্ণভাবে ইউজার ডিলিট করা' })
+  @ApiResponse({ status: 200, description: 'ইউজার সফলভাবে ডিলিট করা হয়েছে' })
+  async deleteUser(@Param('id') id: string) {
+    return await this.profileService.deleteUser(id);
   }
 }
