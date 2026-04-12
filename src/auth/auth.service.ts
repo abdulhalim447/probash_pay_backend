@@ -121,6 +121,21 @@ export class AuthService {
   }
 
   // ─── Seed Admin (first time) ───
+  async seedAdmin() {
+    const exists = await this.adminRepo.findOne({ where: { email: 'admin@probashpay.com' } });
+    if (exists) return { message: 'Admin already exists' };
+
+    const hashedPassword = await bcrypt.hash('Admin@123', 10);
+    const admin = this.adminRepo.create({
+      email: 'admin@probashpay.com',
+      password: hashedPassword,
+      name: 'Super Admin',
+    });
+    await this.adminRepo.save(admin);
+    return { message: 'Admin created successfully' };
+  }
+
+  // ─── Verify User PIN ───
   async verifyUserPin(userId: string, pin: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('User not found');
