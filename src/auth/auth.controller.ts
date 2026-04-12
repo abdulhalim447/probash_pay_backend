@@ -1,5 +1,7 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { VerifyPinDto } from './dto/verify-pin.dto';
 import { AuthService } from './auth.service';
 
 @ApiTags('Auth')
@@ -62,6 +64,16 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   adminLogin(@Body() body: { email: string; password: string }) {
     return this.authService.adminLogin(body.email, body.password);
+  }
+
+  @Post('user/verify-pin')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Verify user PIN (for authenticated sessions)' })
+  @ApiResponse({ status: 200, description: 'PIN verification successful' })
+  @ApiResponse({ status: 401, description: 'Unauthorized / Invalid PIN' })
+  verifyUserPin(@Req() req: any, @Body() dto: VerifyPinDto) {
+    return this.authService.verifyUserPin(req.user.sub, dto.pin);
   }
 
   @Post('admin/seed')
