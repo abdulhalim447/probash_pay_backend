@@ -7,11 +7,6 @@ export class UpdateProfileDto {
   @IsString()
   fullName?: string;
 
-  @ApiProperty({ example: 'john@example.com', description: 'ইউজারের ইমেইল', required: false })
-  @IsOptional()
-  @IsEmail()
-  email?: string;
-
   @ApiProperty({ example: 'https://example.com/photo.jpg', description: 'প্রোফাইল পিকচার URL', required: false })
   @IsOptional()
   @IsString()

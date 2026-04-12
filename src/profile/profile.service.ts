@@ -34,7 +34,6 @@ export class ProfileService {
       id: user.id,
       fullName: user.fullName,
       phone: user.phone,
-      email: user.email,
       profilePhoto: user.profilePhoto,
       status: user.status,
       kycStatus: user.kycStatus,
@@ -48,15 +47,6 @@ export class ProfileService {
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto): Promise<User> {
-    if (dto.email) {
-      const existing = await this.userRepo.findOne({
-        where: { email: dto.email },
-      });
-      if (existing && existing.id !== userId) {
-        throw new BadRequestException('Email already in use');
-      }
-    }
-
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
@@ -98,7 +88,6 @@ export class ProfileService {
         id: user.id,
         fullName: user.fullName,
         phone: user.phone,
-        email: user.email,
         isActive: user.isActive,
         createdAt: user.createdAt,
         wallet: {
