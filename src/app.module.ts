@@ -35,6 +35,8 @@ import { UploadController } from './uploads/upload.controller';
 import { BiometricModule } from './biometric/biometric.module';
 import { BiometricKey } from './biometric/entities/biometric-key.entity';
 import { BiometricChallenge } from './biometric/entities/biometric-challenge.entity';
+import { AppVersionsModule } from './app-versions/app-versions.module';
+import { AppVersion } from './app-versions/app-version.entity';
 
 @Module({
   imports: [
@@ -48,7 +50,25 @@ import { BiometricChallenge } from './biometric/entities/biometric-challenge.ent
         username: configService.get<string>('DB_USERNAME', 'postgres'),
         password: configService.get<string>('DB_PASSWORD', 'postgres'),
         database: configService.get<string>('DB_NAME', 'postgres'),
-        entities: [User, Admin, Wallet, Deposit, WalletTransaction, AppSetting, Withdrawal, ExchangeRateHistory, PaymentAccount, Notice, SocialLink, Notification, SupportTicket, TicketReply, BiometricKey, BiometricChallenge],
+        entities: [
+          User,
+          Admin,
+          Wallet,
+          Deposit,
+          WalletTransaction,
+          AppSetting,
+          Withdrawal,
+          ExchangeRateHistory,
+          PaymentAccount,
+          Notice,
+          SocialLink,
+          Notification,
+          SupportTicket,
+          TicketReply,
+          BiometricKey,
+          BiometricChallenge,
+          AppVersion,
+        ],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -68,6 +88,7 @@ import { BiometricChallenge } from './biometric/entities/biometric-challenge.ent
     SupportTicketsModule,
     CloudinaryModule,
     BiometricModule,
+    AppVersionsModule,
   ],
   controllers: [AppController, UploadController],
   providers: [AppService],
