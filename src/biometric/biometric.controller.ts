@@ -27,7 +27,7 @@ export class BiometricController {
   @ApiResponse({ status: 200, description: 'Challenge generated successfully', schema: { example: { challengeId: 'uuid', challenge: 'base64-string' } } })
   @ApiResponse({ status: 401, description: 'Unauthorized - User must be logged in with PIN first' })
   async getChallenge(@Req() req: any) {
-    return this.biometricService.getChallenge(req.user.sub);
+    return this.biometricService.getChallenge(req.user.id);
   }
 
   // ─── POST register fingerprint (logged-in user) ───
@@ -42,7 +42,7 @@ export class BiometricController {
   @ApiResponse({ status: 200, description: 'Biometric registered successfully' })
   @ApiResponse({ status: 400, description: 'Bad Request - Invalid signature or expired challenge' })
   async register(@Req() req: any, @Body() dto: RegisterBiometricDto) {
-    return this.biometricService.registerBiometric(req.user.sub, dto);
+    return this.biometricService.registerBiometric(req.user.id, dto);
   }
 
   // ─── POST challenge for login (no auth needed) ───
@@ -78,7 +78,7 @@ export class BiometricController {
   @ApiOperation({ summary: "List user's registered fingerprint devices" })
   @ApiResponse({ status: 200, description: 'Device list returned' })
   async listDevices(@Req() req: any) {
-    return this.biometricService.getDevices(req.user.sub);
+    return this.biometricService.getDevices(req.user.id);
   }
 
   // ─── DELETE deactivate a device ───
@@ -89,6 +89,6 @@ export class BiometricController {
   @ApiOperation({ summary: 'Deactivate a registered fingerprint device' })
   @ApiResponse({ status: 200, description: 'Device deactivated' })
   async deactivateDevice(@Req() req: any, @Param('deviceId') deviceId: string) {
-    return this.biometricService.deactivateDevice(req.user.sub, deviceId);
+    return this.biometricService.deactivateDevice(req.user.id, deviceId);
   }
 }

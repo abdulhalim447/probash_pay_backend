@@ -5,6 +5,9 @@ import { User } from '../users/user.entity';
 import { Deposit, DepositStatus } from '../deposits/deposit.entity';
 import { Withdrawal, WithdrawalStatus } from '../withdrawals/withdrawal.entity';
 import { Wallet } from '../wallet/wallet.entity';
+import { SupportTicket } from '../support-tickets/support-ticket.entity';
+import { TicketStatus } from '../support-tickets/enums/ticket-status.enum';
+import { PayoutMethod } from '../withdrawals/withdrawal.entity';
 import { AppSettingsService } from '../app-settings/app-settings.service';
 
 @Injectable()
@@ -18,6 +21,8 @@ export class DashboardService {
     private readonly withdrawalRepo: Repository<Withdrawal>,
     @InjectRepository(Wallet)
     private readonly walletRepo: Repository<Wallet>,
+    @InjectRepository(SupportTicket)
+    private readonly ticketRepo: Repository<SupportTicket>,
     private readonly appSettingsService: AppSettingsService,
   ) {}
 
@@ -25,96 +30,97 @@ export class DashboardService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Users
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    // 1. Core Counts
     const totalUsers = await this.userRepo.count();
-    const activeUsers = await this.userRepo.count({ where: { isActive: true } });
-    const blockedUsers = await this.userRepo.count({ where: { isActive: false } });
-    const newUsersToday = await this.userRepo.count({
-      where: { createdAt: MoreThanOrEqual(today) },
+    const pendingWithdrawalsCount = await this.withdrawalRepo.count({
+      where: { status: WithdrawalStatus.PENDING },
+    });
+    const activeTicketsCount = await this.ticketRepo.count({
+      where: [
+        { status: TicketStatus.OPEN },
+        { status: TicketStatus.IN_PROGRESS },
+      ],
     });
 
-    // Deposits
-    const totalDeposits = await this.depositRepo.count();
-    const pendingDeposits = await this.depositRepo.count({ where: { status: DepositStatus.PENDING } });
-    const todayDepositsCount = await this.depositRepo.count({
-      where: { createdAt: MoreThanOrEqual(today) },
-    });
-
-    const { sum: totalDepositAmountMYR } = await this.depositRepo
-      .createQueryBuilder('deposit')
-      .select('SUM(deposit.amount)', 'sum')
-      .where('deposit.status = :status', { status: DepositStatus.SUCCESS })
+    // 2. Financial Totals (BDT)
+    // Total Balance in BDT (Sum of all wallet balances)
+    const { sum: totalBalanceBDT } = await this.walletRepo
+      .createQueryBuilder('wallet')
+      .select('SUM(wallet.balance)', 'sum')
       .getRawOne();
 
-    const { sum: todayDepositAmountMYR } = await this.depositRepo
+    // Deposits Today (Successful only, in BDT)
+    const { sum: todayDepositsBDT } = await this.depositRepo
       .createQueryBuilder('deposit')
-      .select('SUM(deposit.amount)', 'sum')
+      .select('SUM(deposit.amountBdt)', 'sum')
       .where('deposit.status = :status', { status: DepositStatus.SUCCESS })
       .andWhere('deposit.createdAt >= :today', { today })
       .getRawOne();
 
-    // Withdrawals
-    const totalWithdrawals = await this.withdrawalRepo.count();
-    const pendingWithdrawals = await this.withdrawalRepo.count({ where: { status: WithdrawalStatus.PENDING } });
-    const processingWithdrawals = await this.withdrawalRepo.count({ where: { status: WithdrawalStatus.PROCESSING } });
-    const todayWithdrawalsCount = await this.withdrawalRepo.count({
-      where: { createdAt: MoreThanOrEqual(today) },
-    });
-
-    const { sum: totalWithdrawalAmountBDT } = await this.withdrawalRepo
-      .createQueryBuilder('withdrawal')
-      .select('SUM(withdrawal.amountBDT)', 'sum')
-      .where('withdrawal.status = :status', { status: WithdrawalStatus.COMPLETED })
-      .getRawOne();
-
-    const { sum: todayWithdrawalAmountBDT } = await this.withdrawalRepo
+    // Withdrawals Today (Successful only, in BDT)
+    const { sum: todayWithdrawalsBDT } = await this.withdrawalRepo
       .createQueryBuilder('withdrawal')
       .select('SUM(withdrawal.amountBDT)', 'sum')
       .where('withdrawal.status = :status', { status: WithdrawalStatus.COMPLETED })
       .andWhere('withdrawal.createdAt >= :today', { today })
       .getRawOne();
 
-    // Wallet
-    const { sum: totalBalanceMYR } = await this.walletRepo
-      .createQueryBuilder('wallet')
-      .select('SUM(wallet.balance)', 'sum')
-      .getRawOne();
+    // 3. Daily Remittance Volume (Last 7 Days)
+    const dailyVolume = await this.depositRepo
+      .createQueryBuilder('deposit')
+      .select("TO_CHAR(deposit.createdAt, 'YYYY-MM-DD')", 'date')
+      .addSelect('SUM(deposit.amountBdt)', 'total')
+      .where('deposit.status = :status', { status: DepositStatus.SUCCESS })
+      .andWhere('deposit.createdAt >= :sevenDaysAgo', { sevenDaysAgo })
+      .groupBy('date')
+      .orderBy('date', 'ASC')
+      .getRawMany();
 
-    // Exchange Rate
-    const currentRate = await this.appSettingsService.getExchangeRate();
+    // 4. Payment Methods Distribution
+    const paymentMethods = await this.withdrawalRepo
+      .createQueryBuilder('withdrawal')
+      .select('withdrawal.payoutMethod', 'method')
+      .addSelect('COUNT(withdrawal.id)', 'count')
+      .where('withdrawal.status = :status', { status: WithdrawalStatus.COMPLETED })
+      .groupBy('withdrawal.payoutMethod')
+      .getRawMany();
+
+    const totalCompletedWithdrawals = paymentMethods.reduce((acc, curr) => acc + parseInt(curr.count), 0);
+    const paymentMethodsFormatted = paymentMethods.map(pm => ({
+      method: pm.method,
+      count: parseInt(pm.count),
+      percentage: totalCompletedWithdrawals > 0 ? Math.round((parseInt(pm.count) / totalCompletedWithdrawals) * 100) : 0
+    }));
 
     const parseToFixed = (val: any) => Number(Number(val || 0).toFixed(2));
 
     return {
+      summary: {
+        totalUsers,
+        depositsToday: parseToFixed(todayDepositsBDT),
+        withdrawalsToday: parseToFixed(todayWithdrawalsBDT),
+        pendingWithdrawals: pendingWithdrawalsCount,
+        activeTickets: activeTicketsCount,
+        totalBalanceBDT: parseToFixed(totalBalanceBDT),
+      },
+      charts: {
+        dailyVolume: dailyVolume.map(v => ({
+          date: v.date,
+          amount: parseToFixed(v.total),
+        })),
+        paymentMethods: paymentMethodsFormatted,
+      },
+      // Keep old structure for compatibility if needed, but updated to BDT
       users: {
         total: totalUsers,
-        active: activeUsers,
-        blocked: blockedUsers,
-        newToday: newUsersToday,
-      },
-      deposits: {
-        total: totalDeposits,
-        totalAmountMYR: parseToFixed(totalDepositAmountMYR),
-        pending: pendingDeposits,
-        todayCount: todayDepositsCount,
-        todayAmountMYR: parseToFixed(todayDepositAmountMYR),
-      },
-      withdrawals: {
-        total: totalWithdrawals,
-        totalAmountBDT: parseToFixed(totalWithdrawalAmountBDT),
-        pending: pendingWithdrawals,
-        processing: processingWithdrawals,
-        todayCount: todayWithdrawalsCount,
-        todayAmountBDT: parseToFixed(todayWithdrawalAmountBDT),
       },
       wallet: {
-        totalBalanceMYR: parseToFixed(totalBalanceMYR),
-      },
-      exchangeRate: {
-        currentRate,
-        from: 'MYR',
-        to: 'BDT',
-      },
+        totalBalanceBDT: parseToFixed(totalBalanceBDT),
+      }
     };
   }
 }
