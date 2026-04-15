@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../users/user.entity';
 import { Admin } from '../admin/admin.entity';
 import { WalletService } from '../wallet/wallet.service';
+import { encryptPin, decryptPin, isBcryptHash } from '../common/utils/crypto.util';
 
 @Injectable()
 export class AuthService {
@@ -23,15 +24,19 @@ export class AuthService {
 
   // ─── User Register ───
   async userRegister(phone: string, pin: string, fullName: string) {
+    if (!pin || pin.length < 4) {
+      throw new BadRequestException('PIN must be at least 4 characters long');
+    }
+
     const exists = await this.userRepo.findOne({ where: { phone } });
     if (exists) throw new ConflictException('Phone number already registered');
 
-    const hashedPin = await bcrypt.hash(pin, 10);
+    const encryptedPin = encryptPin(pin);
     const referralCode = 'PP' + Math.random().toString(36).substring(2, 8).toUpperCase();
 
     const user = this.userRepo.create({
       phone,
-      pin: hashedPin,
+      pin: encryptedPin,
       fullName,
       referralCode,
     });
@@ -57,7 +62,15 @@ export class AuthService {
       });
     }
 
-    const pinMatch = await bcrypt.compare(pin, user.pin);
+    // AES encrypted pin — direct compare after decrypt
+    let pinMatch: boolean;
+    if (isBcryptHash(user.pin)) {
+      // পুরনো bcrypt hash — bcrypt দিয়ে compare (migration period)
+      pinMatch = await bcrypt.compare(pin, user.pin);
+    } else {
+      // নতুন AES encrypted — decrypt করে compare
+      pinMatch = decryptPin(user.pin) === pin;
+    }
     if (!pinMatch) throw new UnauthorizedException('Invalid phone or PIN');
 
     const tokens = await this.generateUserTokens(user.id, user.phone);
@@ -140,7 +153,12 @@ export class AuthService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('User not found');
 
-    const pinMatch = await bcrypt.compare(pin, user.pin);
+    let pinMatch: boolean;
+    if (isBcryptHash(user.pin)) {
+      pinMatch = await bcrypt.compare(pin, user.pin);
+    } else {
+      pinMatch = decryptPin(user.pin) === pin;
+    }
     if (!pinMatch) {
       throw new UnauthorizedException({
         success: false,

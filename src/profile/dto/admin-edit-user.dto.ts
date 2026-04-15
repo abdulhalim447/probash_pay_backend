@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsEnum, MinLength } from 'class-validator';
 import { UserStatus, KycStatus } from '../../users/user.entity';
 
 export class AdminEditUserDto {
@@ -13,9 +13,10 @@ export class AdminEditUserDto {
   @IsString()
   phone?: string;
 
-  @ApiProperty({ example: 'newpin12', description: 'নতুন লগইন পিন', required: false })
+  @ApiProperty({ example: 'newpin12', description: 'নতুন লগইন পিন (ন্যূনতম ৪ ডিজিট)', required: false })
   @IsOptional()
   @IsString()
+  @MinLength(4, { message: 'PIN must be at least 4 digits' })
   pin?: string;
 
   @ApiProperty({ example: 1000.50, description: 'ওয়ালেট ব্যালেন্স', required: false })

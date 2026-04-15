@@ -43,7 +43,7 @@ export class AdminUsersController {
   @ApiOperation({ summary: 'আইডি দিয়ে ইউজারের বিস্তারিত তথ্য দেখা' })
   @ApiResponse({ status: 200, description: 'ইউজার তথ্য সফলভাবে পাওয়া গেছে' })
   async getUserDetail(@Param('id') id: string) {
-    return await this.profileService.getProfile(id);
+    return await this.profileService.getProfile(id, true);
   }
 
   @Patch(':id/toggle')

@@ -1,10 +1,10 @@
-import { IsString, IsNotEmpty, Length } from 'class-validator';
+import { IsString, IsNotEmpty, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class VerifyPinDto {
-  @ApiProperty({ example: '123456', description: 'The 6-digit PIN of the user' })
+  @ApiProperty({ example: '1234', description: 'The PIN of the user (Min 4 digits)' })
   @IsString()
   @IsNotEmpty()
-  @Length(6, 6, { message: 'PIN must be exactly 6 digits' })
+  @MinLength(4, { message: 'PIN must be at least 4 digits' })
   pin: string;
 }

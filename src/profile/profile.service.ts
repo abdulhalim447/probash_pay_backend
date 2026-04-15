@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, ILike } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/user.entity';
+import { encryptPin, decryptPin, isBcryptHash } from '../common/utils/crypto.util';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePinDto } from './dto/change-pin.dto';
 import { AdminEditUserDto } from './dto/admin-edit-user.dto';
@@ -25,13 +26,13 @@ export class ProfileService {
     private readonly notificationsService: NotificationsService,
   ) {}
 
-  async getProfile(userId: string): Promise<any> {
+  async getProfile(userId: string, isAdmin = false): Promise<any> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
     const wallet = await this.walletService.getWalletByUserId(userId);
 
-    return {
+    const profile: any = {
       id: user.id,
       fullName: user.fullName,
       phone: user.phone,
@@ -45,6 +46,15 @@ export class ProfileService {
         currency: wallet.currency,
       },
     };
+
+    // Admin হলে ডিক্রিপ্টেড PIN যোগ করুন
+    if (isAdmin) {
+      profile.pin = isBcryptHash(user.pin)
+        ? 'ঊদ্ধারযোগ্য নয় (পুরনো bcrypt) — এডমিন থেকে পিন রিসেট করুন'
+        : decryptPin(user.pin);
+    }
+
+    return profile;
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto): Promise<User> {
@@ -63,12 +73,18 @@ export class ProfileService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
-    const pinMatch = await bcrypt.compare(dto.currentPin, user.pin);
+    // পুরনো bcrypt বা নতুন AES দুটো-ই সাপোর্ট
+    let pinMatch: boolean;
+    if (isBcryptHash(user.pin)) {
+      pinMatch = await bcrypt.compare(dto.currentPin, user.pin);
+    } else {
+      pinMatch = decryptPin(user.pin) === dto.currentPin;
+    }
     if (!pinMatch) {
       throw new BadRequestException('Current PIN is incorrect');
     }
 
-    user.pin = await bcrypt.hash(dto.newPin, 10);
+    user.pin = encryptPin(dto.newPin);
     await this.userRepo.save(user);
 
     return { message: 'PIN changed successfully' };
@@ -99,6 +115,12 @@ export class ProfileService {
         id: user.id,
         fullName: user.fullName,
         phone: user.phone,
+        // অ্যাডমিন API — ডিক্রিপ্টেড PIN দেখাবে
+        pin: isBcryptHash(user.pin)
+          ? 'রিসেট দরকার (পুরনো)'
+          : decryptPin(user.pin),
+        status: user.status,
+        kycStatus: user.kycStatus,
         isActive: user.isActive,
         createdAt: user.createdAt,
         wallet: {
@@ -201,7 +223,7 @@ export class ProfileService {
     }
 
     if (dto.pin) {
-      user.pin = await bcrypt.hash(dto.pin, 10);
+      user.pin = encryptPin(dto.pin);
     }
 
     await this.userRepo.save(user);
@@ -210,7 +232,7 @@ export class ProfileService {
       await this.walletService.setBalance(userId, dto.walletBalance);
     }
 
-    return this.getProfile(userId);
+    return this.getProfile(userId, true);
   }
 
   async deleteUser(userId: string): Promise<{ message: string }> {

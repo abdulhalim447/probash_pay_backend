@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class ChangePinDto {
   @ApiProperty({ example: '123456', description: 'বর্তমান পিন' })
@@ -7,10 +7,10 @@ export class ChangePinDto {
   @IsString()
   currentPin: string;
 
-  @ApiProperty({ example: '654321', description: 'নতুন পিন (৪-৬ ডিজিট)' })
+  @ApiProperty({ example: '654321', description: 'নতুন পিন (নূন্যতম ৪ ডিজিট)' })
   @IsNotEmpty()
   @IsString()
-  @Length(4, 6)
+  @MinLength(4)
   newPin: string;
 
   @ApiProperty({ example: '654321', description: 'পিন নিশ্চিতকরণ' })
