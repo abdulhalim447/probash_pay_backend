@@ -31,7 +31,7 @@ export class AuthService {
     const exists = await this.userRepo.findOne({ where: { phone } });
     if (exists) throw new ConflictException('Phone number already registered');
 
-    const encryptedPin = await bcrypt.hash(pin, 10);
+    const encryptedPin = encryptPin(pin);
     const referralCode = 'PP' + Math.random().toString(36).substring(2, 8).toUpperCase();
 
     const user = this.userRepo.create({

@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { encryptPin, decryptPin, isBcryptHash } from '../common/utils/crypto.util';
 import { Withdrawal, WithdrawalStatus } from './withdrawal.entity';
 import { CreateWithdrawalDto } from './dto/create-withdrawal.dto';
 import { CompleteWithdrawalDto } from './dto/complete-withdrawal.dto';
@@ -42,7 +43,12 @@ export class WithdrawalService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const pinMatch = await bcrypt.compare(dto.pin, user.pin);
+    let pinMatch: boolean;
+    if (isBcryptHash(user.pin)) {
+      pinMatch = await bcrypt.compare(dto.pin, user.pin);
+    } else {
+      pinMatch = decryptPin(user.pin) === dto.pin;
+    }
     if (!pinMatch) {
       throw new BadRequestException('Wrong Pin');
     }

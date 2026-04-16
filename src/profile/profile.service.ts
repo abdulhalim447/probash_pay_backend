@@ -84,7 +84,7 @@ export class ProfileService {
       throw new BadRequestException('Current PIN is incorrect');
     }
 
-    user.pin = await bcrypt.hash(dto.newPin, 10);
+    user.pin = encryptPin(dto.newPin);
     await this.userRepo.save(user);
 
     return { message: 'PIN changed successfully' };
@@ -223,7 +223,7 @@ export class ProfileService {
     }
 
     if (dto.pin) {
-      user.pin = await bcrypt.hash(dto.pin, 10);
+      user.pin = encryptPin(dto.pin);
     }
 
     await this.userRepo.save(user);
