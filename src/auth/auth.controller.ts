@@ -73,7 +73,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'PIN verification successful' })
   @ApiResponse({ status: 401, description: 'Unauthorized / Invalid PIN' })
   verifyUserPin(@Req() req: any, @Body() dto: VerifyPinDto) {
-    return this.authService.verifyUserPin(req.user.sub, dto.pin);
+    return this.authService.verifyUserPin(req.user.id, dto.pin);
   }
 
   @Post('admin/seed')
