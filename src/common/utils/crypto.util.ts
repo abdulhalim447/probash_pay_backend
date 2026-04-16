@@ -14,20 +14,23 @@ export function encryptPin(plainPin: string): string {
 }
 
 export function decryptPin(encryptedPin: string): string {
-  try {
-    const [ivHex, encryptedHex] = encryptedPin.split(':');
-    if (!ivHex || !encryptedHex) return '*** (bcrypt hash)';
-    const iv = Buffer.from(ivHex, 'hex');
-    const encryptedText = Buffer.from(encryptedHex, 'hex');
-    const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
-    const decrypted = Buffer.concat([decipher.update(encryptedText), decipher.final()]);
-    return decrypted.toString('utf8');
-  } catch {
-    // পুরনো bcrypt hash হলে decrypt হবে না — ইন্ডিকেট করে দেবে
-    return '*** (পুরনো bcrypt hash — রিসেট করুন)';
+  if (!encryptedPin || encryptedPin.includes(':')) {
+    try {
+      const [ivHex, encryptedHex] = encryptedPin.split(':');
+      if (!ivHex || !encryptedHex) return encryptedPin;
+
+      const iv = Buffer.from(ivHex, 'hex');
+      const encryptedText = Buffer.from(encryptedHex, 'hex');
+      const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
+      const decrypted = Buffer.concat([decipher.update(encryptedText), decipher.final()]);
+      return decrypted.toString('utf8');
+    } catch {
+      return encryptedPin;
+    }
   }
+  return encryptedPin;
 }
 
 export function isBcryptHash(value: string): boolean {
-  return value.startsWith('$2b$') || value.startsWith('$2a$');
+  return !value.includes(':');
 }
