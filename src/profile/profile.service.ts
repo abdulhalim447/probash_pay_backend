@@ -24,7 +24,7 @@ export class ProfileService {
     private readonly walletService: WalletService,
     private readonly appSettingsService: AppSettingsService,
     private readonly notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   async getProfile(userId: string, isAdmin = false): Promise<any> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
@@ -93,12 +93,12 @@ export class ProfileService {
   async getAllUsers(page: number = 1, limit: number = 20, search?: string): Promise<any> {
     const skip = (page - 1) * limit;
     const searchTerm = search?.trim();
-    
+
     const whereCondition = searchTerm
       ? [
-          { fullName: ILike(`%${searchTerm}%`) },
-          { phone: ILike(`%${searchTerm}%`) },
-        ]
+        { fullName: ILike(`%${searchTerm}%`) },
+        { phone: ILike(`%${searchTerm}%`) },
+      ]
       : {};
 
     const [users, total] = await this.userRepo.findAndCount({
@@ -146,7 +146,7 @@ export class ProfileService {
     if (!user) throw new NotFoundException('User not found');
 
     user.isActive = !user.isActive;
-    
+
     // Align legacy status field
     if (!user.isActive) {
       user.status = 'blocked' as any;
@@ -216,14 +216,14 @@ export class ProfileService {
     if (dto.fullName) user.fullName = dto.fullName;
     if (dto.phone) user.phone = dto.phone;
     if (dto.kycStatus) user.kycStatus = dto.kycStatus;
-    
+
     if (dto.status) {
       user.status = dto.status;
       user.isActive = dto.status === 'active' as any;
     }
 
     if (dto.pin) {
-      user.pin = encryptPin(dto.pin);
+      user.pin = await bcrypt.hash(dto.pin, 10);
     }
 
     await this.userRepo.save(user);
@@ -242,25 +242,25 @@ export class ProfileService {
     // Use query runner / transaction to delete all related data safely to avoid foreign key constraints
     await this.userRepo.manager.transaction(async (manager) => {
       // 1. Delete ticket replies
-      await manager.query(`DELETE FROM ticket_replies WHERE sender_id = $1`, [userId]).catch(() => {});
-      
+      await manager.query(`DELETE FROM ticket_replies WHERE sender_id = $1`, [userId]).catch(() => { });
+
       // 2. Delete support tickets
-      await manager.query(`DELETE FROM support_tickets WHERE user_id = $1`, [userId]).catch(() => {});
-      
+      await manager.query(`DELETE FROM support_tickets WHERE user_id = $1`, [userId]).catch(() => { });
+
       // 3. Delete notifications
-      await manager.query(`DELETE FROM notifications WHERE "userId" = $1`, [userId]).catch(() => {});
-      
+      await manager.query(`DELETE FROM notifications WHERE "userId" = $1`, [userId]).catch(() => { });
+
       // 4. Delete withdrawals
-      await manager.query(`DELETE FROM withdrawals WHERE user_id = $1`, [userId]).catch(() => {});
-      
+      await manager.query(`DELETE FROM withdrawals WHERE user_id = $1`, [userId]).catch(() => { });
+
       // 5. Delete deposits
-      await manager.query(`DELETE FROM deposits WHERE user_id = $1`, [userId]).catch(() => {});
-      
+      await manager.query(`DELETE FROM deposits WHERE user_id = $1`, [userId]).catch(() => { });
+
       // 6. Delete wallet transactions
-      await manager.query(`DELETE FROM wallet_transactions WHERE user_id = $1`, [userId]).catch(() => {});
-      
+      await manager.query(`DELETE FROM wallet_transactions WHERE user_id = $1`, [userId]).catch(() => { });
+
       // 7. Delete wallet
-      await manager.query(`DELETE FROM wallets WHERE user_id = $1`, [userId]).catch(() => {});
+      await manager.query(`DELETE FROM wallets WHERE user_id = $1`, [userId]).catch(() => { });
 
       // Finally, delete the user
       await manager.delete(User, userId);
