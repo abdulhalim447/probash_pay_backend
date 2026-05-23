@@ -148,6 +148,34 @@ export class AuthService {
     return { message: 'Admin created successfully' };
   }
 
+  // ─── Refresh User Tokens ───
+  async refreshTokens(refreshToken: string) {
+    try {
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
+
+      if (!payload || !payload.sub) {
+        throw new UnauthorizedException('Invalid token payload');
+      }
+
+      const user = await this.userRepo.findOne({ where: { id: payload.sub } });
+      if (!user || user.refreshToken !== refreshToken) {
+        throw new UnauthorizedException('Invalid or expired refresh token');
+      }
+
+      const tokens = await this.generateUserTokens(user.id, user.phone);
+      await this.userRepo.update(user.id, { refreshToken: tokens.refreshToken });
+
+      return {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+  }
+
   // ─── Verify User PIN ───
   async verifyUserPin(userId: string, pin: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class CreateNoticeDto {
   @ApiProperty({ example: 'ঈদ মোবারক!', description: 'নোটিশের শিরোনাম' })
@@ -11,4 +11,9 @@ export class CreateNoticeDto {
   @IsNotEmpty()
   @IsString()
   content: string;
+
+  @ApiProperty({ example: 'https://example.com/image.jpg', description: 'ইমেইজের URL (অপশনাল)', required: false })
+  @IsOptional()
+  @IsString()
+  imageUrl: string;
 }

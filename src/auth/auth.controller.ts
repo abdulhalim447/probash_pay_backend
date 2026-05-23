@@ -10,7 +10,7 @@ export class AuthController {
   constructor(private authService: AuthService) { }
 
   @Post('user/register')
-  @ApiOperation({ summary: 'User Registration' })
+  @ApiOperation({ summary: 'ব্যবহারকারী রেজিস্ট্রেশন' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -22,8 +22,8 @@ export class AuthController {
       required: ['phone', 'pin', 'fullName'],
     },
   })
-  @ApiResponse({ status: 201, description: 'Registration successful' })
-  @ApiResponse({ status: 409, description: 'Phone already registered' })
+  @ApiResponse({ status: 201, description: 'রেজিস্ট্রেশন সফল হয়েছে' })
+  @ApiResponse({ status: 409, description: 'মোবাইল নম্বরটি ইতিমধ্যে নিবন্ধিত' })
   userRegister(
     @Body() body: { phone: string; pin: string; fullName: string },
   ) {
@@ -31,7 +31,7 @@ export class AuthController {
   }
 
   @Post('user/login')
-  @ApiOperation({ summary: 'User Login' })
+  @ApiOperation({ summary: 'ব্যবহারকারী লগইন' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -42,14 +42,14 @@ export class AuthController {
       required: ['phone', 'pin'],
     },
   })
-  @ApiResponse({ status: 200, description: 'Login successful with JWT token' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  @ApiResponse({ status: 200, description: 'টোকেনসহ লগইন সফল হয়েছে' })
+  @ApiResponse({ status: 401, description: 'ভুল মোবাইল নম্বর অথবা পিন' })
   userLogin(@Body() body: { phone: string; pin: string }) {
     return this.authService.userLogin(body.phone, body.pin);
   }
 
   @Post('admin/login')
-  @ApiOperation({ summary: 'Admin Login' })
+  @ApiOperation({ summary: 'অ্যাডমিন লগইন' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -60,25 +60,42 @@ export class AuthController {
       required: ['email', 'password'],
     },
   })
-  @ApiResponse({ status: 200, description: 'Admin login successful' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  @ApiResponse({ status: 200, description: 'অ্যাডমিন লগইন সফল হয়েছে' })
+  @ApiResponse({ status: 401, description: 'ভুল ইমেল অথবা পাসওয়ার্ড' })
   adminLogin(@Body() body: { email: string; password: string }) {
     return this.authService.adminLogin(body.email, body.password);
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'ব্যবহারকারীর অ্যাক্সেস এবং রিফ্রেশ টোকেন রিফ্রেশ করা' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsIn...' },
+      },
+      required: ['refreshToken'],
+    },
+  })
+  @ApiResponse({ status: 200, description: 'টোকেন সফলভাবে রিফ্রেশ হয়েছে' })
+  @ApiResponse({ status: 401, description: 'অকার্যকর বা মেয়াদোত্তীর্ণ রিফ্রেশ টোকেন' })
+  refreshTokens(@Body() body: { refreshToken: string }) {
+    return this.authService.refreshTokens(body.refreshToken);
   }
 
   @Post('user/verify-pin')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Verify user PIN (for authenticated sessions)' })
-  @ApiResponse({ status: 200, description: 'PIN verification successful' })
-  @ApiResponse({ status: 401, description: 'Unauthorized / Invalid PIN' })
+  @ApiOperation({ summary: 'ব্যবহারকারীর পিন (PIN) যাচাই করা (লগইন থাকা অবস্থায়)' })
+  @ApiResponse({ status: 200, description: 'পিন যাচাইকরণ সফল হয়েছে' })
+  @ApiResponse({ status: 401, description: 'অননুমোদিত / ভুল পিন' })
   verifyUserPin(@Req() req: any, @Body() dto: VerifyPinDto) {
     return this.authService.verifyUserPin(req.user.id, dto.pin);
   }
 
   @Post('admin/seed')
-  @ApiOperation({ summary: 'Create default admin account (run once)' })
-  @ApiResponse({ status: 201, description: 'Admin created successfully' })
+  @ApiOperation({ summary: 'ডিফল্ট অ্যাডমিন অ্যাকাউন্ট তৈরি করা (একবার চালানোর জন্য)' })
+  @ApiResponse({ status: 201, description: 'অ্যাডমিন সফলভাবে তৈরি হয়েছে' })
   seedAdmin() {
     return this.authService.seedAdmin();
   }

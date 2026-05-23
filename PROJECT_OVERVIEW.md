@@ -127,7 +127,7 @@ src/
 ```
 
 ### 🔌 Working APIs (Key Endpoints)
-- **Auth**: `register`, `login`, `admin/login`
+- **Auth**: `register`, `login`, `admin/login`, `refresh`
 - **Wallet**: `balance`, `transactions`
 - **Deposits**: `submit`, `admin/approve`, `admin/reject`
 - **Withdrawals**: `submit`, `admin/complete`, `admin/reject`

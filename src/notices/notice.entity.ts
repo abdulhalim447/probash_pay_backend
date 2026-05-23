@@ -17,6 +17,9 @@ export class Notice {
   @Column({ type: 'text' })
   content: string;
 
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @Column({ default: true })
   isActive: boolean;
 
